@@ -1,0 +1,18 @@
+// Same AND gate with public-output equality enforced in constrain().
+module attributes {llzk.lang = "workshop"} {
+  struct.def @AND {
+    struct.member @out : !felt.type {llzk.pub}
+    function.def @compute(%a: !felt.type, %b: !felt.type) -> !struct.type<@AND> {
+      %self = struct.new : !struct.type<@AND>
+      %product = felt.mul %a, %b : !felt.type, !felt.type
+      struct.writem %self[@out] = %product : !struct.type<@AND>, !felt.type
+      function.return %self : !struct.type<@AND>
+    }
+    function.def @constrain(%self: !struct.type<@AND>, %a: !felt.type, %b: !felt.type) {
+      %out = struct.readm %self[@out] : !struct.type<@AND>, !felt.type
+      %product = felt.mul %a, %b : !felt.type, !felt.type
+      constrain.eq %out, %product : !felt.type, !felt.type
+      function.return
+    }
+  }
+}

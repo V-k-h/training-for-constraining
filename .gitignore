@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.lake/
+.DS_Store
+*.aux
+*.log
+*.nav
+*.snm
+*.toc
+*.out

@@ -1,0 +1,11 @@
+name = "TrainingForConstraining"
+version = "0.1.0"
+defaultTargets = ["Workshop"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.24.0"
+
+[[lean_lib]]
+name = "Workshop"
