@@ -1,6 +1,6 @@
 # Training for Constraining
 
-**How to Prevent Circuit-Level Bugs** — educational companion repository for a 50-minute Devcon workshop by Levi Katyal Sledd and Vijay Singh. Example models use \(\mathbb F_{11}\) unless otherwise stated.
+**How to Prevent Circuit-Level Bugs** — educational companion repository for a 50-minute Devcon workshop by Levi Katyal Sledd and Vijay Singh. Example models use $\mathbb{F}_{11}$ unless otherwise stated.
 
 > **Security scope:** These are purpose-built mathematical *constraint models*, not deployed Circom/Noir/gnark circuits or production exploit reproductions. The fake-GLV example is an intentionally simplified algebraic illustration, not a confirmed reproduction of any specific gnark CVE. A successful Lean theorem for the model does not imply compiled-circuit security.
 
@@ -9,6 +9,8 @@
 Python 3.10+ is sufficient:
 
 ```bash
+git clone https://github.com/V-k-h/training-for-constraining
+cd training-for-constraining
 make demo
 make test
 ```
@@ -29,17 +31,18 @@ A standalone Lean/mathlib project lives in [`lean/`](lean/):
 
 ```bash
 cd lean
-lake update
-lake exe cache get
+lake exe cache get   # downloads prebuilt Mathlib, several GB on first run
 lake build
 ```
+
+or simply `make lean` from the repository root. Dependencies are pinned in `lean/lean-toolchain` and `lean/lake-manifest.json`, so `lake update` is not needed.
 
 It includes:
 
 - `Workshop/Selector.lean`: concrete bad selector witness; corrected soundness over **any field**; false instance rejected.
 - `Workshop/Quotient.lean`: free quotient in a native field; scalar cancellation over a vector space with explicit nonzero and equality hypotheses.
 
-**Verification note:** Lean and Mathlib are not installed in the environment in which this archive was assembled. The Lean files were prepared but **not compiler-checked** here. Validate with a pinned toolchain locally before public presentation, and fix API differences if the upstream package has changed. Python checks were executed here.
+**Verification note:** All five theorems compile with Lean 4.24.0 and Mathlib v4.24.0 and depend only on the standard axioms (`propext`, `Classical.choice`, `Quot.sound`); no `sorry` is used. The `Lean proofs` GitHub Actions workflow rebuilds them on every change under `lean/`. A theorem about the algebraic model is a statement about that model only, not about any compiled circuit.
 
 ## LLZK (optional)
 
@@ -51,7 +54,7 @@ With a compatible [LLZK](https://github.com/project-llzk/llzk-lib) toolchain:
 make llzk-check
 ```
 
-`llzk-opt` was **not available in the packaging environment**, so the examples need parser verification before being used live. Running `llzk-opt` merely verifies/parses IR: it is **not** a soundness proof. See [`llzk/README.md`](llzk/README.md) for the distinction.
+The two files were checked by hand against the upstream syntax document and match its official AND example operation for operation, but they have **not** been run through `llzk-opt`, which was not available where this repository was assembled. Build `llzk-opt` from a pinned `llzk-lib` release and run the parser check before using them live. Running `llzk-opt` merely verifies/parses IR: it is **not** a soundness proof. See [`llzk/README.md`](llzk/README.md) for the distinction.
 
 ## Slides
 

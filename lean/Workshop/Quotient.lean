@@ -27,6 +27,6 @@ theorem scalar_cancellation
       _ = (s * v) • P := by rw [hscalar]
       _ = v • (s • P) := by rw [mul_comm s v, mul_smul]
   have h' := congrArg (fun R : V => (v⁻¹) • R) h
-  simpa [smul_smul, inv_mul_cancel₀ hv] using h'
+  simpa [smul_smul, inv_mul_cancel₀ hv, inv_mul_cancel_left₀ hv] using h'
 
 end Workshop

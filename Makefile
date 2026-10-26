@@ -10,7 +10,7 @@ test:
 	$(PYTHON) -m unittest discover -s tests -v
 
 lean:
-	cd lean && lake update && lake exe cache get && lake build
+	cd lean && lake exe cache get && lake build
 
 llzk-check:
 	@command -v $(LLZK_OPT) >/dev/null || (echo 'llzk-opt not installed; see llzk/README.md' >&2; exit 1)

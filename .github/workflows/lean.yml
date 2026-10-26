@@ -1,0 +1,20 @@
+name: Lean proofs
+on:
+  push:
+    paths:
+      - 'lean/**'
+      - '.github/workflows/lean.yml'
+  pull_request:
+    paths:
+      - 'lean/**'
+      - '.github/workflows/lean.yml'
+jobs:
+  lean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: lean
+          auto-config: "false"
+          build: "true"

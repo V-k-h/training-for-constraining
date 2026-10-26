@@ -22,7 +22,7 @@ Add `s*(s-1)=0`. In a field this forces `s=0` or `s=1`, so the gadget produces `
 
 ## 3. Show a universal Lean theorem — 60 seconds
 
-Open `lean/Workshop/Selector.lean` and point at `selector_sound`. Explain `mul_eq_zero.mp` and the two cases. If preflight succeeded, run `make lean` or `cd lean && lake build` (the former also updates dependencies). Be clear that a proof of the mathematical model is not a compiler validation result.
+Open `lean/Workshop/Selector.lean` and point at `selector_sound`. Explain `mul_eq_zero.mp` and the two cases. If preflight succeeded, run `make lean` or `cd lean && lake build`. Be clear that a proof of the mathematical model is not a compiler validation result.
 
 ## 4. Show LLZK IR — 60 seconds
 
