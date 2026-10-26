@@ -1,5 +1,7 @@
 \documentclass[aspectratio=169,11pt]{beamer}
 \usepackage{amsmath,amssymb,booktabs,tikz,listings,array,graphicx}
+\usepackage{qrcode}
+\newcommand{\repourl}{https://github.com/V-k-h/training-for-constraining}
 \usepackage{etoolbox}
 \graphicspath{{./}{output/}}
 \usetikzlibrary{positioning,arrows.meta,calc}
@@ -38,9 +40,13 @@
 \vspace{2mm}{\Large How to Prevent Circuit-Level Bugs\par}
 \vspace{7mm}{\normalsize Levi Katyal Sledd and Vijay Singh\par}
 \vspace{3mm}{\small 50-minute workshop\par}
+\begin{tikzpicture}[remember picture,overlay]
+  \node[anchor=south east,inner sep=0] (qr) at ([xshift=-9mm,yshift=13mm]current page.south east) {\qrcode[height=20mm]{\repourl}};
+  \node[anchor=north east,inner sep=0,yshift=-1.5mm] at (qr.south east) {\scriptsize\url{\repourl}};
+\end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Outline}
+\begin{frame}[shrink=12]{Outline}
 \tableofcontents[hideallsubsections]
 \end{frame}
 
@@ -606,7 +612,24 @@ AI helps find places to look; formal methods establish selected properties; huma
 
 
 \begin{frame}[fragile]{Questions}
-\vspace{6mm}\begin{center}\Large Which property does your circuit need to enforce?\\[8mm]\normalsize Demo and reproducible counterexamples accompany this deck.\end{center}
+\begin{columns}[c]
+\column{.66\textwidth}
+{\Large Which property does your circuit need to enforce?\par}
+\vspace{5mm}
+\textbf{Run the counterexamples yourself}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+git clone https://github.com/V-k-h/training-for-constraining
+cd training-for-constraining
+make demo   # five counterexamples over F_11
+make test   # exhaustive checks of the repairs
+make lean   # optional: machine-checked theorems
+\end{lstlisting}
+{\footnotesize Python 3.10+ only. Lean 4 and LLZK material is optional.\par}
+\column{.30\textwidth}
+\centering
+\qrcode[height=34mm]{\repourl}\\[2mm]
+{\scriptsize\url{\repourl}}
+\end{columns}
 \end{frame}
 
 \appendix
