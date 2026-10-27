@@ -32,7 +32,8 @@
 \subtitle{How to Prevent Circuit-Level Bugs}
 \author{Levi Katyal Sledd and Vijay Singh}
 \date{50-minute workshop}
-% Section-outline interruptions disabled to protect 50-minute timing.
+\newcommand{\titleslide}[1]{\begin{frame}\vfill\centering{\usebeamercolor[fg]{structure}\LARGE\bfseries #1\par}\vfill\end{frame}}
+\AtBeginSection[]{\titleslide{\insertsectionhead}}
 \begin{document}
 \begin{frame}[plain]
 \vspace{2mm}\IfFileExists{openzeppelin-logo.png}{\includegraphics[width=52mm]{openzeppelin-logo.png}}{\large\bfseries OpenZeppelin}\\[6mm]
@@ -56,7 +57,7 @@
 
 % Airbender criticals are not circuit underconstraints). Verify against primary sources.
 % Consider adding gnark fake GLV.
-\begin{frame}[fragile]{Motivation: Underconstrained Circuits in 2026}
+\begin{frame}{Motivation: Underconstrained Circuits in 2026}
 \small\begin{tabular}{>{\raggedright\arraybackslash}p{.21\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.31\textwidth}}\toprule
 System & Missing requirement & Reported consequence\\\midrule
 Zcash Orchard & Binding of an ECC base-point cell & Counterfeit Orchard value\\[2mm]
@@ -71,7 +72,7 @@ ZKsync Airbender & Deferred constraints and verifier composition & Three critica
 %==============================================================
 
 \begin{frame}{Finite Fields}
-A field is a set of numbers in which you can add, subtract, multiply, and (divide except by zero).
+A field is a set of numbers in which you can add, subtract, multiply, and divide (except by zero).
 \pause
 
 Fields may be finite.  Simplest example: prime fields $\mathbb F_p = \{0, \ldots, p-1\}$ with $+$ and $\cdot$ modulo $p$.
@@ -87,7 +88,7 @@ Inverse example: $3 \cdot 4 = 12 = 1 \mod 11$, so $4 = 3^{-1} = \tfrac{1}{3}$.
 
 \end{frame}
 
-\begin{frame}[fragile]{Relations and Witnesses}
+\begin{frame}{Relations and Witnesses}
 
 Complex claims (e.g. zkVM execution, blockchain state transitions) can be expressed as knowing a secret witness that relates to public information.
 \pause
@@ -96,7 +97,7 @@ Simple claim: ``I know $w \in \mathbb F_{11}$ such that $x = w^4 + 5$."
 \pause
 
 \begin{itemize}
-\item $w$: private witness
+\item $w$: secret witness
 \item $x$: public witness
 \item Define $R(w, x)$ if $x = w^4 + 5$.
 \end{itemize}
@@ -111,8 +112,13 @@ Usually, the private witness and public witness are vectors:
 \end{itemize}
 \pause
 
-Applied example: $w = (w_0, \ldots, w_k)$ is a Merkle proof, $x = (x_0)$ is a root hash, and $R(w, x): [w_0 \ldots w_k$ iteratively hash up to $x_0]$.
+The public witness can be public inputs, the expected output, or both.
+\pause
 
+Applied example: $w = (w_0, \ldots, w_k)$ is a Merkle proof, $x = (x_0)$ is a root hash, and $R(w, x): [w_0 \ldots w_k$ iteratively hash up to $x_0]$.
+\pause
+
+Note: we may use, e.g., $s, t, u, v, w$ instead of $w_0, \ldots, w_3$ or $x, y, z$ instead of $x_0, x_1, x_2$, as long as it's clear which are public and which are secret.
 \end{frame}
 
 \begin{frame}{Arithmetic Circuits and Constraints}
@@ -138,17 +144,24 @@ $C_2: w_3 = w_2 + 5$\\
 $C_3: w_3 = x_0$\\
 \pause
 \vspace{\baselineskip}
-Here $x=(x_0)$ is public and $w=(w_0,w_1,w_2,w_3)$ is the entire private witness.\begin{itemize}\item $w_1,w_2,w_3$ are intermediate witness values; no separate witness category is needed.\item $(x,w)\vDash C$ means that all four constraints hold.\end{itemize}
+Here,
+\begin{itemize}
+\item $x = (x_0)$ is the public witness.
+\item $w = (w_0)$ is the secret witness. \pause
+\item $(w_1,w_2,w_3)$ are \emph{intermediate witnesses} (also secret). \pause
+\item $\overline w = (w_0, w_1, w_2, w_3)$ is the \emph{extended} witness. \pause
+\item $(\overline w, x) \vDash C$ means that all constraints hold.
+\end{itemize}
 \pause
 
-In this case, $(x,w) \vDash C$ implies $x_0=w_0^4+5$. Conversely, when $x_0=w_0^4+5$ we can choose intermediate values satisfying $C$.
+In this case, $(w, x) \vDash C$ implies $x_0=w_0^4+5$. Conversely, when $x_0=w_0^4+5$ we can choose intermediate values satisfying $C$.
 \end{frame}
 
-\begin{frame}[fragile]{A SNARK Only Proves the Encoded Relation}
-\begin{center}\begin{tikzpicture}[node distance=7mm, every node/.style={align=center,font=\small},b/.style={draw=accent,rounded corners,minimum width=30mm,minimum height=11mm}]
+\begin{frame}{A SNARK Only Proves the Encoded Relation}
+\begin{center}\begin{tikzpicture}[node distance=7mm, every node/.style={align=center,font=\small},b/.style={draw=accent,rounded corners,minimum width=26mm,minimum height=11mm}]
 \node[b](spec){Intended\\Specification $R$};
 \node[b,right=of spec](c){Compiled\\Constraints $C$};
-\node[b,right=of c](proof){Prover\\$(w, x)\mapsto\pi$};
+\node[b,right=of c](proof){Prover\\$(w, x) \mapsto (\overline w, x) \mapsto \pi$};
 \node[b,right=of proof](v){Verifier\\$(\pi, x) \mapsto \text{bool}$};
 \draw[-{Stealth},thick](spec)--node[above,font=\tiny]{encode}(c);
 \draw[-{Stealth},thick](c)--(proof);
@@ -157,40 +170,44 @@ In this case, $(x,w) \vDash C$ implies $x_0=w_0^4+5$. Conversely, when $x_0=w_0^
 \pause
 
 Ideally:
-\[\boxed{C(x,w)=0\quad\Longrightarrow\quad R(x,w)}\]\vspace{-1mm}\begin{center}\footnotesize For a public-statement specification: $\exists w:C(x,w)=0\Rightarrow\exists w:R(x,w)$.\end{center}
+\[\boxed{(\overline w, x) \vDash C \quad \Longleftrightarrow \quad R(w, x)}\]\vspace{-1mm}\begin{center}\footnotesize For a public-statement specification: $\exists w: (w, x) \vDash C \Leftrightarrow\exists w: R(w, x)$.\end{center}
 \pause
 
-An application can fail when this implication fails, even if the proof system works.
+An application can fail when one implication fails, even if the proof system works.
 \end{frame}
 
-\begin{frame}[fragile]{Hints}
+\begin{frame}{Hints}
 \begin{columns}[T]\column{.48\textwidth}
 \textbf{Honest computation}
-\[w_1 \leftarrow w_0^2\]
-A hint or witness generator computes a value outside the circuit.
+\[t \leftarrow w^2\]
+The prover computes a \emph{hint} outside the circuit: if honest, with a witness generator.  The answer provided by the generator is called \emph{advice}.
 \column{.48\textwidth}
 \textbf{Enforced equation}
-\[w_1-w_0^2=0\]
+\[t-w^2=0\]
 A constraint forces every accepted witness to respect that computation.
 \end{columns}
-\vspace{6mm}\begin{block}{The adversarial model}The prover may replace the witness generator and every hint. Only the enforced constraints bind these choices.\end{block}
+\vspace{6mm}\begin{block}{The adversarial model}The prover may replace the witness generator, ignore advice, and substitute their own hints. Only the enforced constraints bind these choices.\end{block}
+\note{4.25--5.5 minutes. A hint is not intrinsically unsafe. Explain that each hint needs enough constraints to establish the desired property, not necessarily a unique internal encoding.}
 \end{frame}
 
 %==============================================================
 \section{Kinds of Underconstraint Bugs}
 %==============================================================
 
-\begin{frame}[fragile]{Common Failure Patterns}
+\begin{frame}{Common Failure Patterns}
 \begin{tabular}{>{\raggedright\arraybackslash}p{.30\textwidth}>{\raggedright\arraybackslash}p{.60\textwidth}}\toprule
 Missing Requirement & What Can Go Wrong\\\midrule
-Equality / copy constraint & Two wires meant to agree can differ.\\[2mm]
-Boolean or range constraint & A selector or amount takes unintended field values.\\[2mm]
-Hint validation & A prover controls the result of an expensive computation.\\[2mm]
-Field / group membership & Algebraic identities hold in a larger domain than intended.\\[2mm]
-Public-input binding & The proved computation no longer binds the claimed input.\\\bottomrule\end{tabular}
+Copy Constraint & Wires disconnect; values disagree.\\[2mm]
+Range Check & Overflow or underflow; unexpected values.\\[2mm]
+Hint Validation & Prover controls a computation.\\[2mm]
+Field / Group Membership Check & Algebraic identities hold outside intended domain.\\[2mm]
+Public Witness Binding & Malleability; i/o can be unrelated to circuit.\\\bottomrule\end{tabular}
+\note{6.75--8 minutes. Mention disabled selectors and branch coverage. These patterns overlap. Use the table to connect the next examples.}
 \end{frame}
 
-\subsection{Missing Public-Input Binding}
+\subsection{Missing Public Output Binding}
+
+\titleslide{Example 0: Missing Public Output Binding}
 
 \begin{frame}{Example: Missing Copy Constraint/Public Binding}
 Suppose we omit $C_3: w_3 = x_0$ from our previous $C$.  
@@ -207,7 +224,7 @@ $C_2: w_3 = w_2 + 5$\\
 For every $x_0$, the prover can pick any $w_0$, compute $w_1, w_2, w_3$, and get $(\overline w, x) \vDash C'$.
 \end{frame}
 
-\begin{frame}{Example: Missing Binding $\to$ False Proof}
+\begin{frame}{Example 0: Missing Binding $\to$ False Proof}
 Claim: ``I know $w_0 \in \mathbb F_{11}$ such that $7 = w_0^4 + 5$'', i.e.\ $w_0^4 = 2$.
 \pause
 
@@ -222,7 +239,6 @@ Note $R(w, 7)$ is false for every $w$.
 But $\overline w = (1, 1, 1, 6)$ and $x_0 = 7$ satisfy $C'$:
 \[1 = 1^2,\qquad 1 = 1^2,\qquad 6 = 1 + 5.\]
 \pause
-
 So the prover can produce a valid proof of a false claim.
 \end{frame}
 
@@ -239,49 +255,69 @@ This copy constraint is the only link between what the circuit computes and what
 
 \subsection{Unvalidated Hints}
 
-\begin{frame}{Example: An Unvalidated IsZero Hint}
-Let $a\in\F_{11}$ be a \textbf{public input}, $z\in\F_{11}$ the \textbf{public output}; $h$ is a private hint.
-\[R((a,z),h):\quad z=\operatorname{IsZero}(a)=\begin{cases}1&a=0,\\0&a\ne0.\end{cases}\]
-A witness generator suggests $h=a^{-1}$ if $a\ne0$, and $h=0$ otherwise. The circuit enforces only
-\[C_0:\qquad z=1-ah.\]
+\titleslide{Example 1: Unvalidated Hints}
+
+\begin{frame}{Example 1: An Unvalidated IsZero Hint}
+Let $w\in\F_{11}$ be a \textbf{secret witness} and $x\in\F_{11}$ a \textbf{public witness}.
+\[R(w,x):\quad x=\operatorname{IsZero}(w)=\begin{cases}1&w=0,\\0&w\ne0.\end{cases}\]
 \pause
-\textbf{Attack:} take $a=3$, $h=0$, $z=1$. Constraint $C_0$ holds, but the public statement $\operatorname{IsZero}(3)=1$ is false.
+
+Let $h$ be a secret hint. A witness generator advises
+\[h=\begin{cases}w^{-1}&w\ne0,\\0&w=0.\end{cases}\]
+\pause
+
+Suppose the constraints are just
+\[C_0:\qquad x=1-wh.\]
+\pause
+\textbf{Attack:} take $w=3$, $h=0$, $x=1$. Constraint $C_0$ holds, but $\operatorname{IsZero}(3) = 1$ is false.
 \end{frame}
 
 \begin{frame}{Repair: Constrain the Hint's Effect}
 Add
-\[\boxed{C_1:\ az=0.}\]
-If $a\ne0$, the field property forces $z=0$, and $C_0$ then forces $h=a^{-1}$.
-If $a=0$, $C_0$ forces $z=1$; the value of $h$ does not matter.
+\[\boxed{C_1:\ wx=0.}\]
+If $w\neq 0$, the field property forces $x=0$, and $C_0$ then forces $h=w^{-1}$.
+
+If $w=0$, $C_0$ forces $x=1$, and the value of $h$ does not matter.
 \pause
 \begin{block}{Lesson}
-A hint need not have a unique representation. The \emph{public behavior} must be pinned down by constraints.
+A hint need not have a unique representation (may have multiple valid $\overline w$ for a given $w$). The \emph{public behavior} must be pinned down by constraints.
 \end{block}
 \end{frame}
 
-\subsection{Missing Boolean check (exercise)}
+\subsection{Missing Boolean Check (Exercise)}
 
-\begin{frame}[fragile]{Exercise: what does this circuit enforce?}
+\titleslide{Exercise 2: A Selector}
+
+\begin{frame}{Exercise 2: A Selector}
 \textbf{Intended behavior:} $s$ selects $x$ or $y$.
 \[s\in\{0,1\},\qquad z=\begin{cases}x&s=1,\\y&s=0.\end{cases}\]
 \textbf{Implemented constraint over $\mathbb F_{11}$:}
 \[\boxed{z=sx+(1-s)y}\]
-Fix public witnesss $x=3$, $y=7$, $z=5$. The selector $s$ is secret.
-\vspace{3mm}\begin{block}{Two minutes with your neighbour}Can you choose $s$ so the equation accepts? Which constraint is missing?\end{block}
+Here $x, y$ are secret inputs.  Fix public output $z = 5$. The selector $s$ is secret.
+\vspace{3mm}\begin{block}{Two minutes with your neighbour}
+Suppose $x = 3, y = 7$.  Can you choose $s$ so that the equation accepts?\\ 
+Which constraint is missing?
+\end{block}
 \end{frame}
 
-\begin{frame}[fragile]{The accepted output can be neither input}
+\begin{frame}{Selector: False Witness and Repair}
+\textbf{False Witness}
+
 For $s=6$ in $\mathbb F_{11}$:
 \[6\cdot3+(1-6)\cdot7=18-35=-17\equiv5\pmod{11}.\]
 The implemented equation accepts, although $5\notin\{3,7\}$.
-\par\vspace{3mm}\textbf{Repair}
+\pause
+
+\textbf{Repair}
 \[\boxed{s(s-1)=0}\qquad\text{and}\qquad z=sx+(1-s)y.\]
 In a field, the new equation forces $s=0$ or $s=1$.
 \end{frame}
 
-\subsection{Range checks and foreign-field arithmetic}
+\subsection{Range Checks and Foreign-Field Arithmetic}
 
-\begin{frame}{A Boolean check is a 1-bit range check}
+\titleslide{Example 3: Range Checks and Foreign-Field Arithmetic}
+
+\begin{frame}{A Boolean Check Is a 1-Bit Range Check}
 $s(s-1) = 0 \Leftrightarrow s \in \{0, 1\}$: a range check on a single bit.
 \pause
 
@@ -291,15 +327,12 @@ Field elements have no order and no sign. In $\mathbb F_{11}$, $3 - 5 = -2 = 9$.
 So claims like ``balance $\geq$ withdrawal'' need a \emph{range check}: reading $x$ as an integer in $\{0, \ldots, p-1\}$, show $x < 2^n$.
 \end{frame}
 
-\begin{frame}{Range checks by bit decomposition}
+\begin{frame}{Range Checks by Bit Decomposition}
 Claim: $x < 4$ in $\mathbb F_{11}$. Secret witnesses are the bits $w_0, w_1$:
 
-$C_0: w_0(w_0 - 1) = 0$
-
-$C_1: w_1(w_1 - 1) = 0$
-
-$C_2: x = w_0 + 2w_1$
-
+$C_0: w_0(w_0 - 1) = 0$\\
+$C_1: w_1(w_1 - 1) = 0$\\
+$C_2: x = w_0 + 2w_1$\\
 \pause
 
 Then $x \in \{0, 1, 2, 3\}$, so $(w, x) \vDash C \Leftrightarrow R(x): x < 4$.
@@ -310,11 +343,11 @@ Pitfall: this needs $2^n \leq p$. With $4$ bits in $\mathbb F_{11}$, $x = w_0 + 
 Two bit patterns, $(1, 1, 0, 0)$ and $(0, 1, 1, 1)$, for the same $x$. If the circuit reads $w_3$ as ``$x \geq 8$'', the prover can claim $3 \geq 8$.
 \end{frame}
 
-\begin{frame}{Arithmetic modulo a different number}
+\begin{frame}{Foreign-Field Arithmetic}
 Sometimes a circuit over $\mathbb F_p$ must check arithmetic modulo some $\ell \neq p$ (e.g.\ elliptic-curve scalars). This is \emph{foreign-field arithmetic}.
 \pause
 
-Toy: native field $\mathbb F_{11}$, foreign modulus $\ell = 3$. Public $x, y, z \in \{0, 1, 2\}$ (already range-checked).
+Small example: native field $\mathbb F_{11}$, foreign modulus $\ell = 3$. Public $x, y, z \in \{0, 1, 2\}$ (already range-checked).
 
 Define $R(x, y, z)$ if $xy \equiv z \pmod 3$.
 \pause
@@ -330,7 +363,7 @@ $C_1: w(w - 1) = 0$
 Example: $x = y = 2$, $z = 1$: $4 - 1 = 3 \cdot 1$, so $w = 1$.
 \end{frame}
 
-\begin{frame}{Why a Boolean quotient suffices}
+\begin{frame}{Range-Check for Sound Modular Arithmetic}
 $C_0: xy - z = 3w$ holds in $\mathbb F_{11}$, i.e.\ $xy - z - 3w$ is a multiple of $11$ as an integer.
 \pause
 
@@ -344,7 +377,7 @@ The only multiple of $11$ in that range is $0$. So $xy - z = 3w$ holds over the 
 The range checks keep every term small enough that the native field never wraps.
 \end{frame}
 
-\begin{frame}{An unbounded quotient checks nothing}
+\begin{frame}{An Unbounded Quotient Checks Nothing}
 Suppose we omit $C_1: w(w - 1) = 0$.
 \pause
 
@@ -356,32 +389,16 @@ False claim: $2 \cdot 2 \equiv 0 \pmod 3$. Take $w = (4 - 0) \cdot 4 = 16 = 5$:
 So $(w, x, y, z) = (5, 2, 2, 0) \vDash \{C_0\}$, but $R(2, 2, 0)$ is false.
 \pause
 
-Over the integers, $4 - 0 = 3 \cdot 5$ is false. The field silently wrapped $15$ around to $4$.
+Over the integers, $4 - 0 = 3 \cdot 5$ is false. The field wraps $15$ to $4$.
 \pause
 
 The quotient \emph{and} every other term must be range-checked, so that the native equation cannot wrap.
 \end{frame}
 
-\subsection{Missing group membership}
-
-\begin{frame}{A Subgroup of Order 5 inside $\F_{11}^{\times}$}
-The multiplicative group $\F_{11}^{\times}$ has order $10$. Its squares form a subgroup
-\[H=\{1,3,4,5,9\},\qquad |H|=5.\]
-\pause
-If $a,b\in H$ and $a^2=b^2$, then $(ab^{-1})^2=1$. Since $H$ has odd order, $ab^{-1}=1$, so $a=b$.
-\end{frame}
-
-\begin{frame}{Cancellation Needs the Subgroup}
-Outside $H$, cancellation can fail: $1^2=(-1)^2$ although $1\ne-1$ in $\F_{11}$.
-\[\boxed{\text{A group-domain hypothesis is part of the theorem.}}\]
-\pause
-For fake GLV, cancellation by $[v]$ is valid when the relevant point difference is in a subgroup of prime order $\ell$ and $v\not\equiv0\pmod\ell$.
-\end{frame}
-
-\section{Deep dive: gnark fake GLV}
+\section{Deep Dive: gnark Fake GLV}
 %==============================================================
 
-\begin{frame}[fragile]{Fake GLV: checking a hinted scalar multiplication}
+\begin{frame}{Fake GLV: Checking a Hinted Scalar Multiplication}
 \textbf{Goal}\quad Establish $Q=[s]P$ with fewer curve operations.
 \vspace{3mm}
 The prover supplies short scalars $u,v$ and the candidate point $Q$.
@@ -392,7 +409,7 @@ If $P,Q$ belong to a prime-order subgroup of order $\ell$ and $v\ne0\pmod\ell$, 
 \textbf{Every hypothesis needs enforcement.}
 \end{frame}
 
-\begin{frame}[fragile]{Two fields meet in one gadget}
+\begin{frame}{Two Fields Meet in One Gadget}
 \begin{tabular}{lll}\toprule
 Symbol & Meaning & Relevant arithmetic\\\midrule
 $r$ & Native circuit field modulus & Coordinates in $\F_r$\\[2mm]
@@ -403,7 +420,7 @@ For BabyJubjub in a BN254 circuit, $r\ne\ell$.
 An equation evaluated in $\F_r$ does not automatically enforce it.
 \end{frame}
 
-\begin{frame}[fragile]{A free quotient makes the check vacuous}
+\begin{frame}{A Free Quotient Makes the Check Vacuous}
 A simplified form of the vulnerable binding check:
 \[\boxed{u-sv=k\ell\quad\text{in }\F_r}\]
 Here $k$ is a prover-supplied field element without sufficient bounds.
@@ -413,7 +430,7 @@ exists for \emph{every} choice of $u,s,v$.
 \vspace{3mm}The equation constrains $k$. It imposes no binding between $u$, $s$, and $v$.
 \end{frame}
 
-\begin{frame}[fragile]{The gnark assertion behind the algebra}
+\begin{frame}[fragile]{The gnark Assertion Behind the Algebra}
 \begin{lstlisting}[language=Go,basicstyle=\ttfamily\footnotesize]
 // Excerpt from the supplied v0.15.0 case study
 s, _ := api.NewHint(halfGCD, 4, checkedScalar, curve.Order)
@@ -429,7 +446,7 @@ For a Boolean sign bit, the branches assert $u-sv=k\ell$ or $u+sv=k\ell$ in $\F_
 \src{https://github.com/Consensys/gnark/pull/1765}{Source excerpt: supplied HTML case study. PR \#1765 is its cited repair.}
 \end{frame}
 
-\begin{frame}[fragile]{What a false scalar multiplication means}
+\begin{frame}{What a False Scalar Multiplication Means}
 Choose $u=0$, $v=1$, and $Q=O$.
 \[[u]P=[v]Q=O.\]
 The free quotient satisfies the native-field equation for any $s$.
@@ -454,32 +471,32 @@ Then $[v](Q-[s]P)=O$ and cancellation gives $Q=[s]P$.
 \end{frame}
 
 %==============================================================
-\section{Finding underconstraints}
+\section{Finding Underconstraints}
 %==============================================================
 
-\begin{frame}[fragile]{Honest-witness tests leave a gap}
-\textbf{Typical positive test}
-\[w\leftarrow\operatorname{HonestWitness}(z),\qquad C(z,w)=0.\]
-\textbf{Soundness question}
-\[\exists z,w:\ C(z,w)=0\ \land\ \neg R(z,w)\ ?\]
-\begin{itemize}
-\item Positive tests check examples of valid executions.
-\item Adversarial witness tests search outside the honest generator's outputs.
-\item Missing constraints can leave every positive test passing.
-\end{itemize}
-\end{frame}
+\subsection{Manual Review}
 
-\subsection{Manual review}
-
-\begin{frame}[fragile]{Manual review starts from the specification}
+\begin{frame}{Manual Review Starts From the Specification}
 \begin{enumerate}
 \item Write the intended domain and input/output relation.
-\item Mark every public witness, private wire, hint, and selector.
+\item Mark every public witness, secret witness, hint, and selector.
 \item Trace the constraints that bind each required property.
 \item Try a value outside the intended domain.
 \item Add the missing constraint and retain the counterexample as a regression.
 \end{enumerate}
 \vspace{3mm}For the selector, the equation covered interpolation. The specification also required a Boolean domain.
+\end{frame}
+
+\begin{frame}{Honest-Witness Tests Leave a Gap}
+\textbf{Typical positive test}
+\[\overline w\leftarrow\operatorname{HonestWitness}(x),\qquad (\overline w, x) \vDash C.\]
+\textbf{Soundness question}
+\[\exists \overline w, x:\ C(\overline w, x)=0\ \land\ \neg R(w, x)\ ?\]
+\begin{itemize}
+\item Positive tests check examples of valid executions.
+\item Adversarial witness tests search outside the honest generator's outputs.
+\item Missing constraints can leave every positive test passing.
+\end{itemize}
 \end{frame}
 
 \subsection{Fuzzing}
@@ -494,7 +511,7 @@ Randomly changing only public inputs often runs the honest witness generator and
 \textbf{Structured attacks beat blind random search:} if a quotient $k$ is free, calculate $k=(u-sv)\ell^{-1}$ directly rather than guessing it.
 \end{frame}
 
-\begin{frame}[fragile]{Demo: fuzz the relation, including the witness}
+\begin{frame}[fragile]{Demo: Fuzz the Relation, Including the Witness}
 \begin{lstlisting}[language=Python]
 # F_11; bypass the honest selector generator
 x, y = 3, 7
@@ -509,17 +526,20 @@ for _ in range(1000):
 Randomize hints and private wires. Preserve the constraints you want to test.
 \end{frame}
 
-\subsection{Formal verification}
+\subsection{Formal Verification}
 \begin{frame}{Formal Verification: Search for an Invalid Witness}
-For public witness $x$ and complete private witness $w$, check satisfiability of
-\[\boxed{\exists x,w:\ C(x,w)=0\ \land\ \neg R(x,w).}\]
+For public witness $x$ and extended secret witness $w$, check satisfiability of
+\[\boxed{\exists w, x:\ C(w, x)=0\ \land\ \neg R(w, x).}\]
 \begin{itemize}
 \item \textbf{SAT:} a witness-level counterexample to the specification exists.
 \item \textbf{UNSAT:} no counterexample exists \emph{in the encoded model}.
 \item \textbf{UNKNOWN / timeout:} no verification conclusion.
 \end{itemize}
 \vspace{1mm}
-For the selector: $z=sx+(1-s)y$ and $z\notin\{x,y\}$ is satisfiable. Add $s(s-1)=0$: the query becomes unsatisfiable over every field.
+For the selector: $z=sx+(1-s)y$ and $z\notin\{x,y\}$ is satisfiable. 
+\pause
+
+Add $s(s-1)=0$: the query becomes unsatisfiable over every field.
 \end{frame}
 
 \section{Verification Infrastructure and AI}
@@ -529,6 +549,7 @@ For the selector: $z=sx+(1-s)y$ and $z\notin\{x,y\}$ is satisfiable. Add $s(s-1)
 
 \begin{frame}[shrink=12]{Formal Verification: Toward a Unified Framework}
 \centering
+\vspace*{7mm}
 \begin{tikzpicture}[>=Stealth, font=\small,
   frontend/.style={draw=accent!60, rounded corners=2pt, fill=paper, minimum width=21mm,minimum height=9mm,align=center},
   backend/.style={draw=accent!60, rounded corners=2pt,fill=paper,minimum width=24mm,minimum height=10mm,align=center},
@@ -537,7 +558,7 @@ For the selector: $z=sx+(1-s)y$ and $z\notin\{x,y\}$ is satisfiable. Add $s(s-1)
   \node[frontend] (halo) at (-1.3,2.1) {Halo2};
   \node[frontend] (plonky) at (1.3,2.1) {Plonky3};
   \node[frontend,dashed,draw=gray] (noir) at (3.9,2.1) {Noir$^{*}$};
-  \node[draw=accent,rounded corners=3pt,very thick,fill=accent,text=white,minimum width=74mm,minimum height=13mm,align=center] (llzk) at (0,.75) {\textbf{LLZK}\\[-1mm]{\scriptsize Common MLIR-based circuit representation}};
+  \node[draw=accent,rounded corners=3pt,very thick,fill=accent,text=white,minimum width=86mm,minimum height=13mm,align=center] (llzk) at (0,.75) {\textbf{LLZK}\\[-1mm]{\scriptsize Common MLIR-based circuit representation}};
   \node[backend] (picus) at (-3.9,-.9) {Picus\\[-1mm]{\tiny SMT / determinism}};
   \node[backend] (lean) at (-1.3,-.9) {zkLean\\[-1mm]{\scriptsize Lean proofs}};
   \node[backend] (r1cs) at (1.3,-.9) {R1CS\\[-1mm]{\scriptsize Constraint export}};
@@ -551,9 +572,8 @@ For the selector: $z=sx+(1-s)y$ and $z\notin\{x,y\}$ is satisfiable. Add $s(s-1)
 \begin{block}{Why it matters}
 One intermediate representation enables reusable analyses across circuit languages; \emph{LLZK is infrastructure, not itself a soundness proof}.
 \end{block}
-{\tiny $^{*}$Evolving integrations / research directions, not universal production support.\par LLZK is open source, developed by Veridise with support from the Ethereum Foundation. \url{https://github.com/project-llzk}}\par
-\vspace{0mm}
-{\tiny\color{gray}\textbf{Scalability note:} Bit-blasting large-prime-field arithmetic into Boolean constraints can be costly. Generic SMT solvers may struggle with nonlinear field operations; specialized algebraic reasoning and circuit-aware verification backends help. LLZK provides the representation, not the solver.}
+{\setlength{\parskip}{0pt}\tiny $^{*}$Evolving integrations / research directions, not universal production support.\par LLZK is open source, developed by Veridise with support from the Ethereum Foundation. \url{https://github.com/project-llzk}\par
+\color{gray}\textbf{Scalability note:} Bit-blasting large-prime-field arithmetic into Boolean constraints can be costly. Generic SMT solvers may struggle with nonlinear field operations; specialized algebraic reasoning and circuit-aware verification backends help. LLZK provides the representation, not the solver.\par}
 \end{frame}
 
 \begin{frame}{Why AI-Assisted Review? The Dependency Problem}
@@ -606,7 +626,7 @@ AI helps find places to look; formal methods establish selected properties; huma
 \centering {\footnotesize \textbf{None alone establishes end-to-end security.}}
 \end{frame}
 
-\section{Wrap-up}
+\section{Wrap-Up}
 %==============================================================
 
 
@@ -633,7 +653,7 @@ make lean   # optional: machine-checked theorems
 \end{frame}
 
 \appendix
-\begin{frame}{Appendix: source reports}
+\begin{frame}{Appendix: Source Reports}
 \small\begin{itemize}
 \item \href{https://shieldedlabs.net/the-orchard-counterfeiting-vulnerability/}{Shielded Labs: Orchard counterfeiting disclosure (June 4, 2026)}.
 \item \href{https://nvd.nist.gov/vuln/detail/CVE-2026-54496}{Orchard missing-copy-constraint technical description}.
@@ -643,7 +663,7 @@ make lean   # optional: machine-checked theorems
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Appendix: fake GLV and further reading}
+\begin{frame}{Appendix: Fake GLV and Further Reading}
 \small\begin{itemize}
 \item Supplied reference: \texttt{fake-glv-underconstraint.html}. Main workshop uses its algebraic example, with explicit subgroup assumptions.
 \item \href{https://github.com/Consensys/gnark/pull/1765}{gnark PR \#1765: repair cited by the supplied reference}.
@@ -653,7 +673,7 @@ make lean   # optional: machine-checked theorems
 \vspace{4mm}The fake-GLV production version and patch claims come from the supplied reference. Check the release advisory before presenting exact affected-version ranges.
 \end{frame}
 
-\begin{frame}[fragile]{Appendix: a source-linked dependency review inventory}
+\begin{frame}{Appendix: A Source-Linked Dependency Review Inventory}
 \small\begin{tabular}{>{\raggedright\arraybackslash}p{.24\textwidth}>{\raggedright\arraybackslash}p{.64\textwidth}}\toprule
 Published example & Review question\\\midrule
 \href{https://github.com/Consensys/gnark/security/advisories/GHSA-95v9-hv42-pwrj}{gnark signature malleability} & Does the caller establish the required scalar range?\\[2mm]
@@ -663,7 +683,7 @@ Published example & Review question\\\midrule
 \vspace{3mm}Illustrative inventory, not a complete issue list. Applicability requires version and call-path review.
 \end{frame}
 
-\begin{frame}{Appendix: why short scalars help}
+\begin{frame}{Appendix: Why Short Scalars Help}
 \[u\equiv sv\pmod\ell,\qquad |u|,|v|\text{ roughly }\sqrt\ell.\]
 The honest prover finds a short lattice vector, often with an extended-Euclidean or half-GCD method.
 \begin{itemize}
