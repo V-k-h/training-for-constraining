@@ -1,7 +1,7 @@
 PYTHON ?= python3
 LLZK_OPT ?= llzk-opt
 
-.PHONY: demo test lean llzk-check all
+.PHONY: demo test lean llzk-check all slides speaker-notes
 
 demo:
 	$(PYTHON) -m demos.circuits
@@ -18,3 +18,9 @@ llzk-check:
 	$(LLZK_OPT) llzk/and_fixed.llzk -o /dev/null
 
 all: demo test
+
+slides:
+	cd slides && tectonic --keep-intermediates workshop.tex
+
+speaker-notes: slides
+	cd slides && tectonic speaker-notes.tex
