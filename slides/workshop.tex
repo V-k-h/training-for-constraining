@@ -16,7 +16,7 @@
 \setbeamercolor{block body}{fg=ink,bg=paper}
 \setbeamercolor{alerted text}{fg=danger}
 \setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{footline}{\begin{beamercolorbox}[wd=\paperwidth,ht=6mm,dp=2mm]{normal text}\hspace{6mm}\raisebox{-1mm}{\IfFileExists{openzeppelin-logo.png}{\includegraphics[width=24mm]{openzeppelin-logo.png}}{\scriptsize OpenZeppelin}}\hfill\usebeamercolor[fg]{structure}\scriptsize\insertframenumber\hspace{6mm}\end{beamercolorbox}}
+\setbeamertemplate{footline}{\begin{beamercolorbox}[wd=\paperwidth,ht=6mm,dp=2mm]{normal text}\hfill\usebeamercolor[fg]{structure}\scriptsize\insertframenumber\hspace{6mm}\end{beamercolorbox}}
 \setbeamertemplate{itemize items}[circle]
 \setbeamerfont{title}{size=\fontsize{27}{31}\selectfont,series=\bfseries}
 \setbeamerfont{subtitle}{size=\large}
@@ -380,7 +380,7 @@ $\ell$ & Prime subgroup order & Scalars modulo $\ell$\\\bottomrule\end{tabular}\
 \vspace{5mm}
 For BabyJubjub in a BN254 circuit, $r\ne\ell$.
 \[u\equiv sv\pmod\ell\quad\text{is a relation in the scalar domain.}\]
-An equation evaluated in $\F_r$ does not automatically enforce it.
+\textbf{But} the equation is evaluated in $\mathbb F_r$.
 \end{frame}
 
 \begin{frame}{A Free Quotient Makes the Check Vacuous}
@@ -492,8 +492,8 @@ Randomize hints and private wires. Preserve the constraints you want to test.
 
 \subsection{Formal Verification}
 \begin{frame}{Formal Verification: Search for an Invalid Witness}
-For public witness $x$ and extended secret witness $w$, check satisfiability of
-\[\boxed{\exists w, x:\ C(w, x)=0\ \land\ \neg R(w, x).}\]
+For public witness $x$ and extended secret witness $\overline w$, check satisfiability of
+\[\boxed{\exists (\overline w, x):\ (\overline w, x) \vDash C \ \land\ \neg R(w, x).}\]
 \begin{itemize}
 \item \textbf{SAT:} a witness-level counterexample to the specification exists.
 \item \textbf{UNSAT:} no counterexample exists \emph{in the encoded model}.
@@ -577,7 +577,7 @@ One intermediate representation enables reusable analyses across circuit languag
   minimum width=49mm,minimum height=17mm,align=center,inner sep=3pt},
   human/.style={draw=danger!75,rounded corners=3pt,fill=danger!7,
   minimum width=49mm,minimum height=17mm,align=center,inner sep=3pt}]
-  \node[tool] (ai) at (-2.75,1.15) {\textbf{Auditor3 (AI-assisted)}\\[-1mm]{\scriptsize Dependency tracing, hypotheses}};
+  \node[tool] (ai) at (-2.75,1.15) {\textbf{AI Auditor}\\[-1mm]{\scriptsize Dependency tracing, hypotheses}};
   \node[tool] (mlir) at (2.75,1.15) {\textbf{MLIR / LLZK}\\[-1mm]{\scriptsize Analyze circuit constraints}};
   \node[tool] (lean) at (-2.75,-.95) {\textbf{Lean proofs}\\[-1mm]{\scriptsize Check mathematical formulas}};
   \node[human] (people) at (2.75,-.95) {\textbf{Human auditors}\\[-1mm]{\scriptsize Review assumptions and exploits}};
