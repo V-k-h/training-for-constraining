@@ -71,23 +71,6 @@ ZKsync Airbender & Deferred constraints and verifier composition & Three critica
 \section{Circuits and Constraints}
 %==============================================================
 
-\begin{frame}{Finite Fields}
-A field is a set of numbers in which you can add, subtract, multiply, and divide (except by zero).
-\pause
-
-Fields may be finite.  Simplest example: prime fields $\mathbb F_p = \{0, \ldots, p-1\}$ with $+$ and $\cdot$ modulo $p$.
-\pause
-
-Example: In $\mathbb F_{11}$, $3 \cdot 7 = 21 \mod 11 = 10$.
-\pause
-
-Note: can reduce at any time, allows for shortcuts such as $10 = -1$.
-\pause
-
-Inverse example: $3 \cdot 4 = 12 = 1 \mod 11$, so $4 = 3^{-1} = \tfrac{1}{3}$.
-
-\end{frame}
-
 \begin{frame}{Relations and Witnesses}
 
 Complex claims (e.g. zkVM execution, blockchain state transitions) can be expressed as knowing a secret witness that relates to public information.
@@ -150,12 +133,14 @@ Note: we may use, e.g., $s, t, u, v, w$ instead of $w_0, \ldots, w_3$ or $x, y, 
 Arithmetic circuit: like a Boolean circuit, but
 \begin{itemize}
 \item wires carry values in $\mathbb F_p$.
-\item gates are $+$ and $\cdot$.
+\item gates are $+$ and $\cdot$ (mod $p$).
 \end{itemize}
 
 \pause
 
-Arithmetic circuits $\equiv$ systems of \emph{constraints}, one for each $+$ or $\cdot$ operation.
+Arithmetic circuits $\equiv$ systems of \emph{constraints}, one for each $+$ or $\cdot$ operation. 
+
+(There are other types of constraint systems, all equivalent).
 
 \end{frame}
 
@@ -225,7 +210,7 @@ Missing Requirement & What Can Go Wrong\\\midrule
 Copy Constraint & Wires disconnect; values disagree.\\[2mm]
 Range Check & Overflow or underflow; unexpected values.\\[2mm]
 Hint Validation & Prover controls a computation.\\[2mm]
-Field / Group Membership Check & Algebraic identities hold outside intended domain.\\[2mm]
+Field / Group Membership Check & Algebraic properties are different outside of intended domain.\\[2mm]
 Public Witness Binding & Malleability; i/o can be unrelated to circuit.\\\bottomrule\end{tabular}
 \note{6.75--8 minutes. Mention disabled selectors and branch coverage. These patterns overlap. Use the table to connect the next examples.}
 \end{frame}
@@ -234,48 +219,25 @@ Public Witness Binding & Malleability; i/o can be unrelated to circuit.\\\bottom
 
 \titleslide{Example 0: Missing Public Output Binding}
 
-\begin{frame}{Example: Missing Copy Constraint/Public Binding}
-Suppose we omit $C_3: w_3 = x_0$ from our previous $C$.  
-\pause
-
-Let $C' = C \smallsetminus \{C_3\} = \{C_0, C_1, C_2\}$.
+\begin{frame}{Example 0: Missing Output Binding}
+Drop $C_3: w_3 = x_0$ from our previous $C$, leaving
 
 $C_0: w_1 = w_0^2$\\
 $C_1: w_2 = w_1^2$\\
-$C_2: w_3 = w_2 + 5$\\
-\pause
-\vspace{\baselineskip}
-
-For every $x_0$, the prover can pick any $w_0$, compute $w_1, w_2, w_3$, and get $(\overline w, x) \vDash C'$.
-\end{frame}
-
-\begin{frame}{Example 0: Missing Binding $\to$ False Proof}
-Claim: ``I know $w_0 \in \mathbb F_{11}$ such that $7 = w_0^4 + 5$'', i.e.\ $w_0^4 = 2$.
+$C_2: w_3 = w_2 + 5$
 \pause
 
-Fourth powers in $\mathbb F_{11}$:
+False claim: ``I know $w_0$ with $w_0^4 + 5 = 7$.'' No fourth power in $\F_{11}$ equals $2$:
 \[\begin{array}{c|ccccccccccc}
 w_0 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\\\hline
 w_0^4 & 0 & 1 & 5 & 4 & 3 & 9 & 9 & 3 & 4 & 5 & 1
 \end{array}\]
-Note $R(w, 7)$ is false for every $w$.
 \pause
 
-But $\overline w = (1, 1, 1, 6)$ and $x_0 = 7$ satisfy $C'$:
-\[1 = 1^2,\qquad 1 = 1^2,\qquad 6 = 1 + 5.\]
-\pause
-So the prover can produce a valid proof of a false claim.
-\end{frame}
-
-\begin{frame}{Repair: Public Input Binding}
-Add a copy constraint to bind an intermediate witness to the public witness
-\[C_3: x_0 = w_3.\]
+But $\overline w = (1, 1, 1, 6)$ and $x_0 = 7$ satisfy $C_0, C_1, C_2$: nothing ties $w_3$ to $x_0$.
 \pause
 
-Now $(w, x) \vDash \{C_0, C_1, C_2, C_3\} \Leftrightarrow R(w, x)$.
-\pause
-
-This copy constraint is the only link between what the circuit computes and what the verifier sees.
+\textbf{Repair:} restore the copy constraint $C_3: w_3 = x_0$, the only link between what the circuit computes and what the verifier sees.
 \end{frame}
 
 \subsection{Unvalidated Hints}
@@ -300,14 +262,14 @@ Suppose the constraints are just
 \begin{frame}{Repair: Constrain the Hint's Effect}
 Add
 \[\boxed{C_1:\ wx=0.}\]
-If $w\neq 0$, the field property forces $x=0$, and $C_0$ then forces $h=w^{-1}$.
+If $w\neq 0$, then $x = 0$, and $C_0: x = 1 - wh$ then forces $h=w^{-1}$.
 
 If $w=0$, $C_0$ forces $x=1$, and the value of $h$ does not matter.
 
 A free hint is fine when it cannot reach the public output: witness non-uniqueness is not underconstraint.
 \pause
 \begin{block}{Lesson}
-A hint need not have a unique representation (may have multiple valid $\overline w$ for a given $w$). The \emph{public behavior} must be pinned down by constraints.
+A hint need not have a unique representation (may have multiple $\overline w$ for a given $w$). The \emph{public behavior} must be pinned down by constraints.
 \end{block}
 \end{frame}
 
@@ -327,8 +289,8 @@ Which constraint is missing?
 \end{block}
 \end{frame}
 
-\begin{frame}{Selector: False Witness and Repair}
-\textbf{False Witness}
+\begin{frame}{Selector: False Proof and Repair}
+\textbf{False Proof}
 
 For $s=6$ in $\mathbb F_{11}$:
 \[6\cdot3+(1-6)\cdot7=18-35=-17\equiv5\pmod{11}.\]
@@ -371,55 +333,29 @@ Two bit patterns, $(1, 1, 0, 0)$ and $(0, 1, 1, 1)$, for the same $x$. If the ci
 \end{frame}
 
 \begin{frame}{Foreign-Field Arithmetic}
-Sometimes a circuit over $\mathbb F_p$ must check arithmetic modulo some $\ell \neq p$ (e.g.\ elliptic-curve scalars). This is \emph{foreign-field arithmetic}.
+Sometimes a circuit over $\F_p$ must check arithmetic modulo some $\ell \neq p$ (e.g.\ elliptic-curve scalars).
 \pause
-
-Small example: native field $\mathbb F_{11}$, foreign modulus $\ell = 3$. Public $x, y, z \in \{0, 1, 2\}$ (already range-checked).
-
-Define $R(x, y, z)$ if $xy \equiv z \pmod 3$.
-\pause
-
-Over the integers, $xy \equiv z \pmod 3 \Leftrightarrow xy - z = 3k$ for some quotient $k$. The prover supplies $k$ as a hint $w$:
-
-$C_0: xy - z = 3w$
-
-$C_1: w(w - 1) = 0$
-
-\pause
-
-Example: $x = y = 2$, $z = 1$: $4 - 1 = 3 \cdot 1$, so $w = 1$.
-\end{frame}
-
-\begin{frame}{Range-Check for Sound Modular Arithmetic}
-$C_0: xy - z = 3w$ holds in $\mathbb F_{11}$, i.e.\ $xy - z - 3w$ is a multiple of $11$ as an integer.
-\pause
-
-With $x, y, z \in \{0, 1, 2\}$ and $w \in \{0, 1\}$:
-\[xy - z - 3w \in \{-5, \ldots, 4\}.\]
-\pause
-
-The only multiple of $11$ in that range is $0$. So $xy - z = 3w$ holds over the integers, and $xy \equiv z \pmod 3$.
-\pause
-
-The range checks keep every term small enough that the native field never wraps.
+\begin{itemize}
+\item Write each integer in base $B$, $a = a_0 + a_1 B + a_2 B^2 + \cdots$, and range-check every \emph{limb} $a_i < B$. \pause
+\item Choose $B$ small enough that limb products and carries stay below $p$, so native equations hold over the integers. \pause
+\item To show $ab \equiv c \pmod \ell$, the prover hints a quotient $k$ and the circuit checks $ab = k\ell + c$, with $k$ and $c$ range-checked too.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{An Unbounded Quotient Checks Nothing}
-Suppose we omit $C_1: w(w - 1) = 0$.
+Small example: native $\F_{11}$, foreign $\ell = 3$, public $x, y, z \in \{0, 1, 2\}$. Check $xy \equiv z \pmod 3$ with
+\[C_0: xy - z = 3k \quad\text{in } \F_{11}.\]
 \pause
 
-$3$ is invertible in $\mathbb F_{11}$ ($3^{-1} = 4$), so $C_0$ is satisfied by $w = (xy - z) \cdot 4$ for \emph{any} $x, y, z$.
+If $k$ is unbounded, $3^{-1} = 4$ gives $k = 4(xy - z)$ for \emph{any} $x, y, z$.
 \pause
 
-False claim: $2 \cdot 2 \equiv 0 \pmod 3$. Take $w = (4 - 0) \cdot 4 = 16 = 5$:
-\[3 \cdot 5 = 15 = 4 \text{ in } \mathbb F_{11}.\]
-So $(w, x, y, z) = (5, 2, 2, 0) \vDash \{C_0\}$, but $R(2, 2, 0)$ is false.
+\textbf{Repair:} $C_1: k(k-1) = 0$. Then $|xy - z - 3k| < 11$, so $C_0$ holds over the integers.
 \pause
 
-Over the integers, $4 - 0 = 3 \cdot 5$ is false. The field wraps $15$ to $4$.
-\pause
-
-The quotient \emph{and} every other term must be range-checked, so that the native equation cannot wrap.
+\begin{block}{Lesson}
+Range-check the quotient \emph{and} every other term, so the native equation cannot wrap. Missing this is the gnark fake-GLV bug.
+\end{block}
 \end{frame}
 
 \section{Deep Dive: gnark Fake GLV}
@@ -453,8 +389,9 @@ A simplified form of the vulnerable binding check:
 Here $k$ is a prover-supplied field element without sufficient bounds.
 Since $\ell\ne0$ in $\F_r$,
 \[k=(u-sv)\ell^{-1}\pmod r\]
-exists for \emph{every} choice of $u,s,v$.
-\vspace{3mm}The equation constrains $k$. It imposes no binding between $u$, $s$, and $v$.
+exists for \emph{every} choice of $u,s,v$.  
+
+The equation constrains $k$. It imposes no binding between $u$, $s$, and $v$.
 \end{frame}
 
 \begin{frame}[fragile]{The gnark Assertion Behind the Algebra}
