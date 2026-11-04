@@ -13,7 +13,7 @@
 \sect{1. Constraints are an ideal; soundness is a question about rational points}
 A circuit over $\F_p$ is a list of polynomials $f_1,\dots,f_m\in R=\F_p[x_1,\dots,x_n]$ (public and private wires alike). The accepted
 witnesses are exactly the $\F_p$-rational points of $\I=\langle f_1,\dots,f_m\rangle$, i.e.\ $V_{\F_p}(\I)=V(\I)\cap\F_p^{\,n}$.
-Soundness says every accepted witness satisfies the specification $R$. The solver checks the contrapositive,
+Soundness says every accepted witness satisfies the specification $R$. The solver refutes its negation:
 \[
 \exists\,(w,x)\in\F_p^{\,n}:\quad f_1=\dots=f_m=0\ \wedge\ \neg R(w,x),
 \]

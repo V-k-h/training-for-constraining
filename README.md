@@ -54,7 +54,7 @@ With a compatible [LLZK](https://github.com/project-llzk/llzk-lib) toolchain:
 make llzk-check
 ```
 
-The two files were checked by hand against the upstream syntax document and match its official AND example operation for operation, but they have **not** been run through `llzk-opt`, which was not available where this repository was assembled. Build `llzk-opt` from a pinned `llzk-lib` release and run the parser check before using them live. Running `llzk-opt` merely verifies/parses IR: it is **not** a soundness proof. See [`llzk/README.md`](llzk/README.md) for the distinction.
+The two files match the official AND example in the upstream syntax document operation for operation; they have not yet been run through `llzk-opt`. To check them, build `llzk-opt` from a pinned `llzk-lib` release and run `make llzk-check`. Parsing verifies the IR only: it is **not** a soundness proof. See [`llzk/README.md`](llzk/README.md) for the distinction.
 
 ## Slides
 
@@ -69,18 +69,17 @@ make speaker-notes   # deck, then notes
 
 If you build with `pdflatex` instead, run it twice: the title-slide QR code is placed on the second pass.
 
-## Suggested live sequence (3–5 minutes)
+## Explore further
 
-1. Show a false selector statement accepted by the broken relation: `make demo`.
-2. Explain the repair: `s(s-1)=0`.
-3. Display the universal theorem in `lean/Workshop/Selector.lean` (run `lake build` beforehand).
-4. Compare `llzk/and_vulnerable.llzk` with `llzk/and_fixed.llzk`: witness computation is not enforcement.
-5. Return to the gnark dependency story: this same separation can occur inside a third-party gadget.
+1. Run `make demo` and find the non-Boolean selector: the vulnerable relation accepts $z = 5$ although it is neither input, and adding $s(s-1)=0$ rejects it.
+2. Read `selector_sound` in [`lean/Workshop/Selector.lean`](lean/Workshop/Selector.lean): the same repair, proved for every field.
+3. Run `diff -u llzk/and_vulnerable.llzk llzk/and_fixed.llzk`: both compute `out = a*b`, but only one constrains it. Witness computation is not enforcement.
+4. Read [`notes/smt-ring-theory.pdf`](notes/smt-ring-theory.pdf) for how SMT solvers decide these soundness queries, and where Lean proofs take over.
 
 ## Sources and acknowledgments
 
 - [LLZK project](https://github.com/project-llzk/llzk-lib) and [IR specification](https://github.com/project-llzk/llzk-lib/blob/main/doc/doxygen/03_syntax.md) — open source, developed by Veridise with Ethereum Foundation support.
 - [Lean 4](https://lean-lang.org/) and [Mathlib](https://github.com/leanprover-community/mathlib4).
-- The workshop case study of fake GLV should always be paired with the exact published affected versions and repair when discussing real implementations.
+- gnark fake GLV, the workshop's case study: the [vulnerable `scalarMulFakeGLV` in v0.15.0](https://github.com/Consensys-Incorporated/gnark/blob/v0.15.0/std/algebra/native/twistededwards/point.go#L129-L182), with an unbounded quotient, and the [repair in v0.16.0](https://github.com/Consensys-Incorporated/gnark/blob/v0.16.0/std/algebra/native/twistededwards/scalar_decomp.go), which checks the scalar decomposition in emulated arithmetic and constrains the result to the prime-order subgroup. See also [PR #1765](https://github.com/Consensys-Incorporated/gnark/pull/1765).
 
-The educational repository's MIT license applies to this repository's original examples and notes; it does not relicense the upstream LLZK or Lean/Mathlib projects. Review use of names and logos before publishing under an organization's branding.
+The MIT license applies to this repository's original examples and notes. It does not relicense the upstream LLZK or Lean/Mathlib projects, and it does not cover the OpenZeppelin name or logo.

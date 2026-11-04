@@ -1,6 +1,6 @@
 import Mathlib
 
-/-! Public inputs x,y,z; private witness s. No auxiliary-witness category. -/
+/-! The selector gadget: inputs x and y, output z, selector s. -/
 namespace Workshop
 
 /-- `ZMod 11` is a field because 11 is prime; Mathlib needs this fact in scope. -/

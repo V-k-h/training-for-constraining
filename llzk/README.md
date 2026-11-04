@@ -22,4 +22,4 @@ You can also run `make llzk-check`, which checks both with `llzk-opt` and errors
 
 Upstream LLZK supports analysis/translation routes, including SMT and zkLean, but using them requires backend-specific lowering and specifications. This repository intentionally does **not** claim to provide an end-to-end configured LLZK-to-SMT or LLZK-to-Lean proof pipeline. Compare [LLZK tool guides](https://github.com/project-llzk/llzk-lib/blob/main/doc/doxygen/02_tools.md). The standalone Lean theorems formalize the same *mathematical security properties*, not a mechanically linked proof of these LLZK files.
 
-Upstream LLZK is under active development. Test against a pinned `llzk-lib` release/commit before a public live demonstration.
+Upstream LLZK is under active development, so pin an `llzk-lib` release or commit when you run the parser check.

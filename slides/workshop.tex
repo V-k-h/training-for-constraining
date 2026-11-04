@@ -55,8 +55,6 @@
 \section{Motivation}
 %==============================================================
 
-% Airbender criticals are not circuit underconstraints). Verify against primary sources.
-% Consider adding gnark fake GLV.
 \begin{frame}{Motivation: Underconstrained Circuits in 2026}
 \small\begin{tabular}{>{\raggedright\arraybackslash}p{.21\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.31\textwidth}}\toprule
 System & Missing requirement & Reported consequence\\\midrule
@@ -196,7 +194,6 @@ The prover computes a \emph{hint} outside the circuit: if honest, with a witness
 A constraint forces every accepted witness to respect that computation.
 \end{columns}
 \vspace{6mm}\begin{block}{The adversarial model}The prover may replace the witness generator, ignore advice, and substitute their own hints. Only the enforced constraints bind these choices.\end{block}
-\note{4.25--5.5 minutes. A hint is not intrinsically unsafe. Explain that each hint needs enough constraints to establish the desired property, not necessarily a unique internal encoding.}
 \end{frame}
 
 %==============================================================
@@ -211,7 +208,6 @@ Range Check & Overflow or underflow; unexpected values.\\[2mm]
 Hint Validation & Prover controls a computation.\\[2mm]
 Field / Group Membership Check & Algebraic properties are different outside of intended domain.\\[2mm]
 Public Witness Binding & Malleability; i/o can be unrelated to circuit.\\\bottomrule\end{tabular}
-\note{6.75--8 minutes. Mention disabled selectors and branch coverage. These patterns overlap. Use the table to connect the next examples.}
 \end{frame}
 
 \subsection{Missing Public Output Binding}
