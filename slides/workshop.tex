@@ -514,25 +514,23 @@ Add $s(s-1)=0$: the query becomes unsatisfiable over every field.
   frontend/.style={draw=accent!60, rounded corners=2pt, fill=paper, minimum width=21mm,minimum height=9mm,align=center},
   backend/.style={draw=accent!60, rounded corners=2pt,fill=paper,minimum width=24mm,minimum height=10mm,align=center},
   arrow/.style={-{Stealth[length=2mm]},line width=.8pt,draw=ink!65}]
-  \node[frontend] (circom) at (-3.9,2.1) {Circom};
-  \node[frontend] (halo) at (-1.3,2.1) {Halo2};
-  \node[frontend] (plonky) at (1.3,2.1) {Plonky3};
-  \node[frontend,dashed,draw=gray] (noir) at (3.9,2.1) {Noir$^{*}$};
+  \node[frontend] (circom) at (-2.6,2.1) {Circom};
+  \node[frontend] (halo) at (0,2.1) {Halo2};
+  \node[frontend,dashed,draw=gray] (noir) at (2.6,2.1) {Noir$^{*}$};
   \node[draw=accent,rounded corners=3pt,very thick,fill=accent,text=white,minimum width=86mm,minimum height=13mm,align=center] (llzk) at (0,.75) {\textbf{LLZK}\\[-1mm]{\scriptsize Common MLIR-based circuit representation}};
-  \node[backend] (picus) at (-3.9,-.9) {Picus\\[-1mm]{\tiny SMT / determinism}};
-  \node[backend] (lean) at (-1.3,-.9) {zkLean\\[-1mm]{\scriptsize Lean proofs}};
-  \node[backend] (r1cs) at (1.3,-.9) {R1CS\\[-1mm]{\scriptsize Constraint export}};
-  \node[backend,dashed,draw=gray] (rocq) at (3.9,-.9) {Rocq$^{*}$\\[-1mm]{\scriptsize Proof backend}};
-  \foreach \a in {circom,halo,plonky}{\draw[arrow] (\a.south) -- (\a.south |- llzk.north);}
+  \node[backend] (pcl) at (-3.9,-.9) {PCL $\to$ Picus\\[-1mm]{\scriptsize Determinism}};
+  \node[backend] (smt) at (-1.3,-.9) {SMT\\[-1mm]{\scriptsize Solver queries}};
+  \node[backend] (lean) at (1.3,-.9) {zkLean\\[-1mm]{\scriptsize Lean proofs}};
+  \node[backend] (r1cs) at (3.9,-.9) {R1CS\\[-1mm]{\scriptsize Constraint export}};
+  \foreach \a in {circom,halo}{\draw[arrow] (\a.south) -- (\a.south |- llzk.north);}
   \draw[arrow,dashed] (noir.south) -- (noir.south |- llzk.north);
-  \foreach \b in {picus,lean,r1cs}{\draw[arrow] (llzk.south -| \b.north) -- (\b.north);}
-  \draw[arrow,dashed] (llzk.south -| rocq.north) -- (rocq.north);
+  \foreach \b in {pcl,smt,lean,r1cs}{\draw[arrow] (llzk.south -| \b.north) -- (\b.north);}
 \end{tikzpicture}
 \vspace{1mm}
 \begin{block}{Why it matters}
 One intermediate representation enables reusable analyses across circuit languages; \emph{LLZK is infrastructure, not itself a soundness proof}.
 \end{block}
-{\setlength{\parskip}{0pt}\scriptsize $^{*}$Research directions, not production support.\par
+{\setlength{\parskip}{0pt}\scriptsize $^{*}$Frontend in development. Circom and Halo2 frontends and all four backends are maintained by the LLZK project.\par
 LLZK is open source, developed by Veridise with support from the Ethereum Foundation: \url{https://github.com/project-llzk}\par}
 \end{frame}
 
@@ -574,7 +572,7 @@ LLZK is open source, developed by Veridise with support from the Ethereum Founda
   human/.style={draw=danger!75,rounded corners=3pt,fill=danger!7,
   minimum width=49mm,minimum height=17mm,align=center,inner sep=3pt}]
   \node[tool] (ai) at (-2.75,1.15) {\textbf{AI Auditor}\\[-1mm]{\scriptsize Dependency tracing, hypotheses}};
-  \node[tool] (mlir) at (2.75,1.15) {\textbf{MLIR / LLZK}\\[-1mm]{\scriptsize Analyze circuit constraints}};
+  \node[tool] (mlir) at (2.75,1.15) {\textbf{MLIR / LLZK}\\[-1mm]{\scriptsize Open-source LLZK constraint analysis}};
   \node[tool] (lean) at (-2.75,-.95) {\textbf{Lean proofs}\\[-1mm]{\scriptsize Check mathematical formulas}};
   \node[human] (people) at (2.75,-.95) {\textbf{Human auditors}\\[-1mm]{\scriptsize Review assumptions and exploits}};
 \end{tikzpicture}

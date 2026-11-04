@@ -598,16 +598,18 @@ slide 26, remain hard. That is where Lean proofs take over.
 \snote{41}{Formal Verification: Toward a Unified Framework}{39:30}{%
 Problem: every circuit language would need its own analysers.
 
-LLZK is a common MLIR-based representation. Circom, Halo2 and Plonky3 compile into it, and analyses
-run on it: Picus for SMT-based determinism, zkLean for Lean proofs, R1CS export. Dashed boxes are
-research directions, not production support.
+LLZK is a common MLIR-based representation. Circom and Halo2 compile into it today, and a Noir frontend
+is in development: the dashed box. Four backends run on it: PCL, which feeds the Picus determinism
+checker; SMT for solver queries like slide 39's; zkLean for Lean proofs; and R1CS export. That is exactly
+the set the LLZK project lists as maintained.
 
 The box says it plainly: LLZK is infrastructure, not itself a soundness proof.
 
 Credit: open source, developed by Veridise with support from the Ethereum Foundation.
 }{}{%
-``What about Zirgen?'' RISC Zero's circuit compiler; Veridise has a zirgen-to-LLZK frontend. Zirgen
-writes constraints, solvers decide them: compiler versus decision procedure.
+``What about Zirgen?'' RISC Zero's circuit compiler. Veridise has announced a zirgen-to-LLZK frontend,
+but it is not on LLZK's maintained list. Zirgen writes constraints; solvers decide them.
+``Plonky3?'' It appears in LLZK's benchmarks, not as a maintained frontend, so it is not on the slide.
 }
 
 \snote{42}{Why AI-Assisted Review? The Dependency Problem}{40:45}{%
@@ -624,8 +626,8 @@ Present AI as triage, not as proof of an exploit and not as a substitute for hum
 }
 
 \snote{43}{How We Review ZK Systems at OpenZeppelin}{41:45}{%
-Four complementary approaches: an AI auditor for dependency tracing and hypotheses; MLIR and LLZK to
-analyse circuit constraints; Lean to check the mathematics; human auditors to connect proofs and
+Four complementary approaches: an AI auditor for dependency tracing and hypotheses; the open-source
+LLZK framework from slide 41, built by Veridise, to analyse circuit constraints; Lean to check the mathematics; human auditors to connect proofs and
 counterexamples to the real threat model.
 
 None alone establishes end-to-end security.
