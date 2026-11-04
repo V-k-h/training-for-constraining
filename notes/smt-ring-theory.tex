@@ -101,7 +101,7 @@ A full Gr\"obner basis for this system takes time \emph{exponential in $b$}. The
 circomlib's \texttt{Num2Bits} at $b=32$ ``even in a week''. The diagnosis (their \S3.2) is sharp: the bitsum alone is already a
 Gr\"obner basis, the bit constraints alone are already a Gr\"obner basis, and it is \emph{their combination} that blows up.
 Translating to bit-vectors is a dead end because the surrounding equations are genuinely field equations. And the pattern is not
-exotic: 98\% of public Circom projects use bitsums, and 64\% of the variables in circomlib's SHA-2 sit inside one. This is slide 27
+exotic: 98\% of public Circom projects use bitsums, and 64\% of the variables in circomlib's SHA-2 sit inside one. This is slide 24
 of the workshop at industrial scale.
 
 \sect{7. The fix: several small bases plus one non-algebraic fact}
@@ -128,10 +128,10 @@ Monolithic (2023) & 475 & 13 & 191 & 38\\
 doubly exponential. The gain is heuristic, and the third row above shows it is almost entirely the propagator.
 \item \textbf{The propagator matches a syntactic pattern.} It fires only on $Y-\sum 2^{i-1}X_i$ with $m<\log_2|\F|$ and bits already
 known Boolean. Signed-digit or base-$2^k$ limb decompositions, bitsums rewritten by earlier algebra, and any decomposition with
-$2^m>p$ (the slide-27 pitfall, where representation is not unique) receive no help and fall back to raw Gr\"obner computation.
+$2^m>p$ (the slide-24 pitfall, where representation is not unique) receive no help and fall back to raw Gr\"obner computation.
 \item \textbf{Integer semantics are out of reach.} The authors' own account of what remains: ``\textsc{BitSplit} struggles only with
 division and remainder; verifying their determinism would require understanding that integer division is deterministic, as encoded
-in field constraints.'' That is precisely the quotient-and-range argument of slides 28--30 and of foreign-field gadgets like fake GLV.
+in field constraints.'' That is precisely the quotient-and-range argument of slides 25--26 and of foreign-field gadgets like fake GLV.
 \item \textbf{Determinism is not soundness.} The breakthrough is on determinism queries, $\Phi(X,Y)\wedge\Phi(X,Y')\wedge Y\ne Y'$,
 whose specification writes itself. Queries against a real specification $R$ (CirC soundness, 59/100) remain hard, and the
 selector of \S4 is sound for a reason determinism alone cannot express.
@@ -145,7 +145,7 @@ A Lean proof is not a search, so it has no \textsc{unknown}: a human supplies th
 cost is human time rather than solver time. That cost is worth paying exactly where the list above says the solver stops.
 \textbf{Parametric statements.} ``Binary representation is unique whenever $2^b\le p$'' is one theorem for all $b$ and all $p$,
 a short induction; the solver needs one query per $(b,p)$ and times out past $b\approx32$ for the hard operators.
-\textbf{Integer semantics.} The argument ``$xy-z-3w\in\{-5,\dots,4\}$ and the only multiple of 11 there is 0'' is a lift from
+\textbf{Integer semantics.} The argument ``$xy-z-3k\in\{-5,\dots,4\}$ and the only multiple of 11 there is 0'' is a lift from
 $\F_p$ to $\mathbb Z$ followed by linear arithmetic; in Lean that is \texttt{omega} after \texttt{ZMod.val} bookkeeping, and it
 scales to 254-bit moduli and multi-limb representations unchanged. This is the division-and-remainder gap, closed.
 \textbf{Specifications, not just determinism.} \texttt{selector\_sound} and \texttt{scalar\_cancellation} in the repository state

@@ -58,7 +58,16 @@ The two files were checked by hand against the upstream syntax document and matc
 
 ## Slides
 
-[`slides/workshop.pdf`](slides/workshop.pdf) and [`slides/workshop.tex`](slides/workshop.tex) are the current workshop deck. If `openzeppelin-logo.png` is not available, the LaTeX source uses a text fallback.
+[`slides/workshop.pdf`](slides/workshop.pdf) is the current workshop deck, built from [`slides/workshop.tex`](slides/workshop.tex). Presenter notes are in [`slides/speaker-notes.pdf`](slides/speaker-notes.pdf), and a two-page note on how SMT solvers decide these queries, and where Lean takes over, is in [`notes/smt-ring-theory.pdf`](notes/smt-ring-theory.pdf).
+
+To rebuild with [tectonic](https://tectonic-typesetting.github.io/):
+
+```bash
+make slides          # deck
+make speaker-notes   # deck, then notes
+```
+
+If you build with `pdflatex` instead, run it twice: the title-slide QR code is placed on the second pass.
 
 ## Suggested live sequence (3–5 minutes)
 
