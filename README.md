@@ -58,7 +58,7 @@ The two files match the official AND example in the upstream syntax document ope
 
 ## Slides
 
-[`slides/workshop.pdf`](slides/workshop.pdf) is the current workshop deck, built from [`slides/workshop.tex`](slides/workshop.tex). Presenter notes are in [`slides/speaker-notes.pdf`](slides/speaker-notes.pdf), and a two-page note on how SMT solvers decide these queries, and where Lean takes over, is in [`notes/smt-ring-theory.pdf`](notes/smt-ring-theory.pdf).
+[`slides/workshop.pdf`](slides/workshop.pdf) is the current workshop deck, built from [`slides/workshop.tex`](slides/workshop.tex). Presenter notes are in [`slides/speaker-notes.pdf`](slides/speaker-notes.pdf), and a three-page note on how SMT solvers decide these queries, and where Lean takes over, is in [`notes/smt-ring-theory.pdf`](notes/smt-ring-theory.pdf).
 
 To rebuild with [tectonic](https://tectonic-typesetting.github.io/):
 
