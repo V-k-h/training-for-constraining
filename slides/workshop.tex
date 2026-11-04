@@ -84,7 +84,6 @@ Simple claim: ``I know $w \in \mathbb F_{11}$ such that $x = w^4 + 5$."
 \item $x$: public witness
 \item Define $R(w, x)$ if $x = w^4 + 5$.
 \end{itemize}
-\pause
 \end{frame}
 
 \begin{frame}{Relations and Witnesses}
@@ -164,7 +163,7 @@ Here,
 \end{itemize}
 \pause
 
-In this case, $(w, x) \vDash C$ implies $x_0=w_0^4+5$. Conversely, when $x_0=w_0^4+5$ we can choose intermediate values satisfying $C$.
+In this case, $(\overline w, x) \vDash C$ implies $x_0=w_0^4+5$. Conversely, when $x_0=w_0^4+5$ we can choose intermediate values satisfying $C$.
 \end{frame}
 
 \begin{frame}{A SNARK Only Proves the Encoded Relation}
@@ -180,7 +179,7 @@ In this case, $(w, x) \vDash C$ implies $x_0=w_0^4+5$. Conversely, when $x_0=w_0
 \pause
 
 Ideally:
-\[\boxed{(\overline w, x) \vDash C \quad \Longleftrightarrow \quad R(w, x)}\]\vspace{-1mm}\begin{center}\footnotesize For a public-statement specification: $\exists w: (w, x) \vDash C \Leftrightarrow\exists w: R(w, x)$.\end{center}
+\[\boxed{(\overline w, x) \vDash C \quad \Longleftrightarrow \quad R(w, x)}\]\vspace{-1mm}\begin{center}\footnotesize For a public-statement specification: $\exists \overline w: (\overline w, x) \vDash C \Leftrightarrow\exists w: R(w, x)$.\end{center}
 \pause
 
 An application can fail when one implication fails, even if the proof system works.
@@ -396,7 +395,7 @@ The equation constrains $k$. It imposes no binding between $u$, $s$, and $v$.
 
 \begin{frame}[fragile]{The gnark Assertion Behind the Algebra}
 \begin{lstlisting}[language=Go,basicstyle=\ttfamily\footnotesize]
-// Excerpt from the supplied v0.15.0 case study
+// Simplified from gnark v0.15.0, twistededwards/point.go
 s, _ := api.NewHint(halfGCD, 4, checkedScalar, curve.Order)
 s1, s2, bit, k := s[0], s[1], s[2], s[3]
 vs := api.Mul(s2, checkedScalar)
@@ -407,7 +406,7 @@ api.AssertIsEqual(lhs, rhs)
 \end{lstlisting}
 For a Boolean sign bit, the branches assert $u-sv=k\ell$ or $u+sv=k\ell$ in $\F_r$.
 \vspace{2mm}Both branches let the free quotient absorb the discrepancy. Bounds on $s_1,s_2$ do not bind $k$.
-\src{https://github.com/Consensys/gnark/pull/1765}{Source excerpt: supplied HTML case study. PR \#1765 is its cited repair.}
+\src{https://github.com/Consensys-Incorporated/gnark/blob/v0.15.0/std/algebra/native/twistededwards/point.go\#L129-L182}{gnark v0.15.0, \texttt{std/algebra/native/twistededwards/point.go}, \texttt{scalarMulFakeGLV} (variables renamed).}
 \end{frame}
 
 \begin{frame}{What a False Scalar Multiplication Means}
@@ -431,7 +430,7 @@ To infer $Q=[s]P$ from $[u]P=[v]Q$, require:
 \vspace{1mm}
 Then $[v](Q-[s]P)=O$ and cancellation gives $Q=[s]P$.
 \begin{block}{Crucial point}Bounding the quotient $k$ \emph{alone} does not establish the foreign-field relation. All terms need sound bounds/carry reasoning so native-field wraparound cannot invalidate the integer argument.\end{block}
-\src{https://github.com/Consensys/gnark/pull/1765}{gnark PR \#1765 (verify precise affected paths and releases before attribution).}
+\src{https://github.com/Consensys-Incorporated/gnark/blob/v0.16.0/std/algebra/native/twistededwards/scalar_decomp.go}{Repaired in gnark v0.16.0: emulated arithmetic mod $\ell$ and a subgroup check on the result.}
 \end{frame}
 
 %==============================================================
@@ -455,7 +454,7 @@ Then $[v](Q-[s]P)=O$ and cancellation gives $Q=[s]P$.
 \textbf{Typical positive test}
 \[\overline w\leftarrow\operatorname{HonestWitness}(x),\qquad (\overline w, x) \vDash C.\]
 \textbf{Soundness question}
-\[\exists \overline w, x:\ C(\overline w, x)=0\ \land\ \neg R(w, x)\ ?\]
+\[\exists (\overline w, x):\ (\overline w, x) \vDash C\ \land\ \neg R(w, x)\ ?\]
 \begin{itemize}
 \item Positive tests check examples of valid executions.
 \item Adversarial witness tests search outside the honest generator's outputs.
@@ -477,13 +476,13 @@ Randomly changing only public inputs often runs the honest witness generator and
 
 \begin{frame}[fragile]{Demo: Fuzz the Relation, Including the Witness}
 \begin{lstlisting}[language=Python]
-# F_11; bypass the honest selector generator
+# F_11: choose the private selector ourselves
 x, y = 3, 7
 for _ in range(1000):
-    b = rng.randrange(11)
-    z = (b*x + (1-b)*y) % 11
-    if accepts(x, y, z, b) and z not in (x, y):
-        report_counterexample(x, y, z, b)
+    s = random.randrange(11)       # not only 0 or 1
+    z = (s*x + (1-s)*y) % 11       # constraint holds by construction
+    if z not in (x, y):            # but the specification fails
+        report_counterexample(x, y, z, s)
         break
 \end{lstlisting}
 \textbf{Oracle:} acceptance plus a violation of the independent specification.\\[2mm]
@@ -507,9 +506,6 @@ Add $s(s-1)=0$: the query becomes unsatisfiable over every field.
 \end{frame}
 
 \section{Verification Infrastructure and AI}
-% Insert these two frames into the existing Beamer document.
-% Requires: \usepackage{tikz} and \usetikzlibrary{positioning,arrows.meta,calc}
-% Uses existing deck colors: accent, paper, ink, danger.
 
 \begin{frame}[shrink=12]{Formal Verification: Toward a Unified Framework}
 \centering
@@ -536,8 +532,8 @@ Add $s(s-1)=0$: the query becomes unsatisfiable over every field.
 \begin{block}{Why it matters}
 One intermediate representation enables reusable analyses across circuit languages; \emph{LLZK is infrastructure, not itself a soundness proof}.
 \end{block}
-{\setlength{\parskip}{0pt}\tiny $^{*}$Evolving integrations / research directions, not universal production support.\par LLZK is open source, developed by Veridise with support from the Ethereum Foundation. \url{https://github.com/project-llzk}\par
-\color{gray}\textbf{Scalability note:} Bit-blasting large-prime-field arithmetic into Boolean constraints can be costly. Generic SMT solvers may struggle with nonlinear field operations; specialized algebraic reasoning and circuit-aware verification backends help. LLZK provides the representation, not the solver.\par}
+{\setlength{\parskip}{0pt}\scriptsize $^{*}$Research directions, not production support.\par
+LLZK is open source, developed by Veridise with support from the Ethereum Foundation: \url{https://github.com/project-llzk}\par}
 \end{frame}
 
 \begin{frame}{Why AI-Assisted Review? The Dependency Problem}
@@ -590,7 +586,8 @@ AI helps find places to look; formal methods establish selected properties; huma
 \centering {\footnotesize \textbf{None alone establishes end-to-end security.}}
 \end{frame}
 
-\section{Wrap-Up}
+\AtBeginSection[]{}% the closing Questions slide needs no separate title slide
+\section{Questions}
 %==============================================================
 
 
@@ -629,12 +626,12 @@ make lean   # optional: machine-checked theorems
 
 \begin{frame}{Appendix: Fake GLV and Further Reading}
 \small\begin{itemize}
-\item Supplied reference: \texttt{fake-glv-underconstraint.html}. Main workshop uses its algebraic example, with explicit subgroup assumptions.
-\item \href{https://github.com/Consensys/gnark/pull/1765}{gnark PR \#1765: repair cited by the supplied reference}.
+\item \href{https://github.com/Consensys-Incorporated/gnark/blob/v0.15.0/std/algebra/native/twistededwards/point.go\#L129-L182}{Vulnerable code: gnark v0.15.0, \texttt{scalarMulFakeGLV} (unbounded quotient $k$)}.
+\item \href{https://github.com/Consensys-Incorporated/gnark/pull/1765}{gnark PR \#1765: scalar-decomposition verification and regression tests, released in v0.16.0}.
 \item \href{https://ethresear.ch/t/fake-glv-you-dont-need-an-efficient-endomorphism-to-implement-glv-like-scalar-multiplication-in-snark-circuits/20394}{Fake GLV: original method discussion (2024)}.
 \item \href{https://blog.zksecurity.xyz/posts/openvm-bugs/}{ZKSecurity: AI-assisted OpenVM discovery (2026)}.
 \end{itemize}
-\vspace{4mm}The fake-GLV production version and patch claims come from the supplied reference. Check the release advisory before presenting exact affected-version ranges.
+\vspace{4mm}Versions checked against gnark's source at the v0.15.0 and v0.16.0 tags. No claim is made about exploitation in deployed applications.
 \end{frame}
 
 \begin{frame}{Appendix: A Source-Linked Dependency Review Inventory}

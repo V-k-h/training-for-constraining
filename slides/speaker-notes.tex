@@ -73,7 +73,7 @@
 {\LARGE\bfseries Training for Constraining: speaker notes\par}
 \vspace{2pt}
 {\normalsize Levi Katyal Sledd and Vijay Singh \quad$\cdot$\quad Devcon~8 workshop\par}
-{\small Notes for Levi's concise revision of \texttt{slides/workshop.pdf}, 3 November 2026\par}
+{\small Notes for the final 48-slide deck, \texttt{slides/workshop.pdf}\par}
 {\color{accent}\rule{\linewidth}{0.7pt}}
 
 \textbf{How to read.} The notes run continuously in slide order. Each entry shows the slide in its
@@ -96,33 +96,28 @@ Example 3 (range, foreign field) & 22--26 & 22:00 & 4:30 & \\
 Deep dive: gnark fake GLV & 27--33 & 26:30 & 7:00 & \\
 Finding underconstraints, demo & 34--39 & 33:30 & 6:00 & \\
 Verification infrastructure, AI & 40--43 & 39:30 & 3:15 & \\
-Wrap-up & 44--45 & 42:45 & 2:15 & \\
-Questions & 45 & 45:00 & 5:00 & \\\bottomrule
+Close & 44 & 42:45 & 2:15 & \\
+Questions & 44 & 45:00 & 5:00 & \\\bottomrule
 \end{tabular}\par}
 The talk ends at 45:00, leaving five minutes of questions in a 50-minute slot. The two \verb|\note|
 timings inside \texttt{workshop.tex} (slides 11 and 13) predate Levi's revisions and are superseded.
 \textbf{If behind schedule,} compress slides 8, 24 and 25 to one sentence each, and protect the exercise
-(20--21), the fake-GLV arc (28--33), the demo (38) and the close (45).
+(20--21), the fake-GLV arc (28--33), the demo (38) and the close (44).
 
 \textbf{Before presenting}
 \begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
 \item \textbf{Confirm the slot length.} The title slide says 50 minutes; Devcon~8 lists workshops at 60.
   With 60, give the extra time to the exercise and to questions.
-\item \textbf{Remove drafting text printed on slides.} Slide 31 (``supplied HTML case study''), slide 33
-  (``verify precise affected paths and releases''), slide 47 (``Supplied reference:
-  fake-glv-underconstraint.html'' and ``Check the release advisory''). Replacement facts, checked against
-  gnark's source, are in the notes for slides 31 and 33.
 \item \textbf{Slide 4, Airbender row.} A comment in the source questions whether these findings are
   circuit underconstraints. Verify against the report or drop the row.
 \item \textbf{Preflight the demo on the presenting laptop}, offline: \texttt{make all} and \texttt{make lean}
   from the repository root, with a large terminal font.
-\item \textbf{Slide 6} has an empty final click; click through it.
 \item \textbf{Rebuild with} \texttt{make slides}. A single \texttt{pdflatex} run leaves the title-slide QR
   code cut off the page; it needs two passes.
 \end{enumerate}
-\textbf{Status.} The repository is public, and the QR codes on slides 1 and 45 were checked to scan.
+\textbf{Status.} The repository is public, and the QR codes on slides 1 and 44 were checked to scan.
 
-\textbf{Closing line} (slide 45): \emph{A prover can replace every private witness and every hint. Only
+\textbf{Closing line} (slide 44): \emph{A prover can replace every private witness and every hint. Only
 enforced constraints bind the public claim. Check the assumptions of your dependencies and compilers,
 not only your own code.}
 
@@ -160,7 +155,7 @@ not establish prior exploitation.
 }{%
 Before the talk: verify or drop the Airbender row (see the cover page).
 }{%
-Sources for every row are on appendix slide 46. The rows have different consequences; do not say all
+Sources for every row are on appendix slide 45. The rows have different consequences; do not say all
 four were exploitable soundness failures. The slide's own footnote: Airbender was one critical
 circuit bug and two verifier-composition flaws.
 }
@@ -176,7 +171,7 @@ Simple claim: I know $w$ with $x=w^4+5$. Here $w$ is the secret witness, $x$ the
 and the relation $R(w,x)$ is the property we actually care about.
 
 Everything else today is one question: does the circuit really enforce $R$?
-}{The last click reveals nothing (a stray pause in the source). Click through it.}{}
+}{}{}
 
 \snote{7}{Relations and Witnesses: Merkle Example}{4:30}{%
 In practice both witnesses are vectors, and the public part can be inputs, outputs, or both.
@@ -218,7 +213,7 @@ $(\overline w,x)\vDash C$ means every constraint holds.
 Last line: for this system, satisfying $C$ is exactly the relation. Remember $C_3$. In a few minutes
 we delete it.
 }{%
-Five clicks. Where the last line writes $(w,x)\vDash C$, say ``the extended witness satisfies $C$''.
+Five clicks, one per bullet.
 }{}
 
 \snote{10}{A SNARK Only Proves the Encoded Relation}{8:30}{%
@@ -426,7 +421,7 @@ $P,Q$ in the prime-order subgroup, and $v\not\equiv0\pmod\ell$.
 
 ``Every hypothesis needs enforcement'' is the checklist for the next five slides.
 }{}{%
-``Why are the scalars short?'' Appendix slide 49: lattice reduction outside the circuit gives
+``Why are the scalars short?'' Appendix slide 48: lattice reduction outside the circuit gives
 $|u|,|v|\approx\sqrt\ell$.
 }
 
@@ -466,9 +461,7 @@ $k$ absorbs any discrepancy.
 \nolinkurl{std/algebra/native/twistededwards} package at \textbf{v0.15.0} (released 13 May 2026),
 lines 135--147, with variables renamed. In v0.15.0 the public \texttt{ScalarMul} for native twisted
 Edwards curves calls this function directly. The very next line in v0.15.0 already rejects $s_2=0$,
-which is why slide 32 uses $v=1$ rather than $v=0$.
-
-Before the talk: replace the on-slide source line ``supplied HTML case study''.
+which is why slide 32 uses $v=1$ rather than $v=0$. The source line on the slide links the v0.15.0 file.
 }{%
 ``Which versions? Was it exploited?'' State only what the source shows: v0.15.0 has the unbounded
 quotient; v0.16.0 (19 Aug 2026) replaces it (slide 33). PR \#1765, a performance PR merged 15 July
@@ -510,8 +503,6 @@ with emulated arithmetic modulo the curve order, so the native quotient is gone 
 asserted in that emulated field (item 3). The hinted point is forced into the prime-order subgroup,
 with a source comment describing a 2-torsion attack otherwise (item 2). $s_1,s_2$ are range-checked
 (item 4).
-
-Before the talk: replace ``verify precise affected paths and releases'' in the source line.
 }{%
 ``Is the cancellation step proved?'' Yes, in the model: the repository's Lean theorem
 \texttt{scalar\_cancellation} proves it over any vector space, from the scalar relation and $v\ne0$.
@@ -572,8 +563,8 @@ From the repository root run \texttt{make demo}. Point at the non-Boolean select
 $(3,7,5;6)$, vulnerable ACCEPT, repaired REJECT. Optionally \texttt{make test}: seven tests, exhaustive
 over $\F_{11}$.
 
-The loop on the slide is illustrative and is not in the repository. As written, \texttt{accepts} is
-automatically true, because $z$ is computed from the constraint.
+The loop on the slide is a sketch of what \texttt{make demo} checks; it is not a file in the repository. It computes $z$
+from the constraint, so the constraint always holds, and the only test left is the specification.
 
 Fallback without a terminal: slide 21 already shows the result.
 }{%
@@ -640,8 +631,7 @@ counterexamples to the real threat model.
 None alone establishes end-to-end security.
 }{}{Careful wording: not every engagement uses every technique.}
 
-\transition{44}{\emph{Wrap-Up.}}
-\snote{45}{Questions}{42:45}{%
+\snote{44}{Questions}{42:45}{%
 Ask the question on the slide: which property does your circuit need to enforce?
 
 Then the takeaway: a prover can replace every private witness and every hint. Only enforced
@@ -659,26 +649,24 @@ explicit subgroup check for that reason.
 regression test.
 }
 
-\snote{46}{Appendix: Source Reports}{backup}{%
+\snote{45}{Appendix: Source Reports}{backup}{%
 Use only if asked about the incidents on slide 4. Every link on this slide resolved when checked on
 28 October 2026.
 }{}{}
 
-\snote{47}{Appendix: Fake GLV and Further Reading}{backup}{%
-Further reading on fake GLV, including the original ethresear.ch method write-up.
-}{%
-Before the talk: replace ``Supplied reference: fake-glv-underconstraint.html'' and ``Check the release
-advisory'' with the gnark facts in the notes for slides 31 and 33.
-}{}
+\snote{46}{Appendix: Fake GLV and Further Reading}{backup}{%
+Links to the vulnerable gnark v0.15.0 code, PR \#1765 (released in v0.16.0), and the original ethresear.ch
+write-up of the method.
+}{}{}
 
-\snote{48}{Appendix: A Source-Linked Dependency Review Inventory}{backup}{%
+\snote{47}{Appendix: A Source-Linked Dependency Review Inventory}{backup}{%
 Example review questions per published advisory. Use it if someone asks how to start a dependency
 review.
 }{}{%
 The fake-GLV DoS advisory listed here is a different issue from the soundness case in the main deck.
 }
 
-\snote{49}{Appendix: Why Short Scalars Help}{backup}{%
+\snote{48}{Appendix: Why Short Scalars Help}{backup}{%
 For ``why short scalars''. Lattice reduction outside the circuit finds $u\equiv sv\pmod\ell$ with
 $|u|,|v|\approx\sqrt\ell$, which halves the double-and-add loop. Because the decomposition happens
 outside the circuit, the circuit must enforce the relation, signs, bounds and a nonzero $v$.
